@@ -40,3 +40,11 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Firebase & 인증 관련 ###
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+resources/google-services.json
+src/main/resources/customservice-bc346-firebase-adminsdk-fbsvc-00f4029def.json
+resources/
+**/.gradle/
