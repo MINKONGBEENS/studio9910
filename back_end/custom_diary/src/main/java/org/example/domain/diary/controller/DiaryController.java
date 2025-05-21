@@ -33,5 +33,30 @@ public class DiaryController {
         List<DiaryResponseDTO> list = diaryService.listDiaries(uid);
         return ResponseEntity.ok(list);
     }
+
+    // 단일 일기 호출
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<DiaryResponseDTO> getDiary(Authentication auth, @PathVariable Long diaryId) {
+        return ResponseEntity.ok(diaryService.getDiary(auth.getName(), diaryId));
+    }
+
+    @PutMapping("/{diaryId}")
+    public ResponseEntity<DiaryResponseDTO> updateDiary(
+            Authentication auth,
+            @PathVariable Long diaryId,
+            @Valid @RequestBody DiaryRequestDTO req) {
+        String uid = auth.getName();
+        return ResponseEntity.ok(
+                diaryService.updateDiary(uid, diaryId, req)
+        );
+    }
+
+    @DeleteMapping("/{diaryId}")
+    public ResponseEntity<Void> deleteDiary(
+            Authentication auth,
+            @PathVariable Long diaryId) {
+        diaryService.deleteDiary(auth.getName(), diaryId);
+        return ResponseEntity.noContent().build();
+    }
 }
 

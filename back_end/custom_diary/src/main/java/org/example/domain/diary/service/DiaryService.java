@@ -74,6 +74,65 @@ public class DiaryService {
                     return dto;
                 }).collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public DiaryResponseDTO getDiary(String userId, Long diaryId) {
+        Diary d = diaryRepo.findById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다"));
+        if (!d.getUser().getFirebaseUid().equals(userId)) {
+            throw new SecurityException("권한 없음");
+        }
+        DiaryResponseDTO dto = new DiaryResponseDTO();
+        dto.setId(d.getId()); dto.setTitle(d.getTitle()); dto.setContent(d.getContent());
+        dto.setBookmark(d.isBookmark()); dto.setCreatedAt(d.getCreatedAt());
+        dto.setImagePaths(d.getImages().stream().map(DiaryImage::getImagePath).collect(Collectors.toList()));
+        return dto;
+    }
+
+    @Transactional
+    public DiaryResponseDTO updateDiary(String userId, Long diaryId, DiaryRequestDTO req) {
+        Diary d = diaryRepo.findById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다"));
+        if (!d.getUser().getFirebaseUid().equals(userId)) {
+            throw new SecurityException("권한 없음");
+        }
+        d.setTitle(req.getTitle());
+        d.setContent(req.getContent());
+        d.setBookmark(req.isBookmark());
+        // 이미지 교체: 기존 삭제 후 새로 저장
+        imageRepo.deleteAll(d.getImages());
+        req.getImagePaths().forEach(path -> {
+            DiaryImage img = new DiaryImage();
+            img.setDiary(d);
+            img.setImagePath(path);
+            imageRepo.save(img);
+        });
+        Diary updated = diaryRepo.save(d);
+        return toDto(updated);
+    }
+
+    @Transactional
+    public void deleteDiary(String userId, Long diaryId) {
+        Diary d = diaryRepo.findById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다"));
+        if (!d.getUser().getFirebaseUid().equals(userId)) {
+            throw new SecurityException("권한 없음");
+        }
+        diaryRepo.delete(d);
+    }
+
+    private DiaryResponseDTO toDto(Diary d) {
+        DiaryResponseDTO dto = new DiaryResponseDTO();
+        dto.setId(d.getId());
+        dto.setTitle(d.getTitle());
+        dto.setContent(d.getContent());
+        dto.setBookmark(d.isBookmark());
+        dto.setCreatedAt(d.getCreatedAt());
+        dto.setImagePaths(
+                d.getImages().stream().map(DiaryImage::getImagePath).collect(Collectors.toList())
+        );
+        return dto;
+    }
 }
 
 
