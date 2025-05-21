@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
+import org.example.domain.gallery.service.FolderService;
 import org.example.domain.user.dto.*;
 import org.example.domain.user.entity.*;
 import org.example.domain.user.repository.*;
@@ -28,6 +29,7 @@ public class UserService {
     private final ObjectMapper objectMapper;
     private final PasswordEncoder passwordEncoder;
     private final FirebaseAuth firebaseAuth;
+    private final FolderService folderService;
 
     @Transactional
     public SignupResponseDTO registerUser(SignupRequestDTO req) {
@@ -55,6 +57,9 @@ public class UserService {
                 req.getBirthDate()
         );
         userRepo.save(user);
+
+        // ===> 2-1) 기본 폴더 초기화 (Bookmark, Weekly Webtoon)
+        folderService.initializeDefaultFolders(uid);
 
         // 3) 약관 동의 저장
         for (TermAgreementDTO t : req.getTerms()) {

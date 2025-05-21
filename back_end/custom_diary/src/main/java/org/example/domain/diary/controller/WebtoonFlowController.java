@@ -3,7 +3,8 @@ package org.example.domain.diary.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.*;
 
-import org.example.domain.service.WebtoonFlowService;
+import org.example.domain.diary.service.WebtoonFlowService;
+import org.example.domain.gallery.dto.WeeklyFolderDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class WebtoonFlowController {
     }
 
     @GetMapping("/weekly")
-    public ResponseEntity<WeeklyWebtoonResponseDTO> weekly(
+    public ResponseEntity<WeeklyFolderDTO> weekly(
             Authentication auth,
             @RequestParam int year,
             @RequestParam int month,

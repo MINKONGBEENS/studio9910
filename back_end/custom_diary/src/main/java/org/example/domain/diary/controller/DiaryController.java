@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.DiaryRequestDTO;
 import org.example.domain.diary.dto.DiaryResponseDTO;
-import org.example.domain.service.DiaryService;
+import org.example.domain.diary.service.DiaryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;

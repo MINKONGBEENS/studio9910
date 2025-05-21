@@ -1,4 +1,4 @@
-package org.example.domain.service;
+package org.example.domain.diary.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.DiaryRequestDTO;
@@ -75,5 +75,6 @@ public class DiaryService {
                 }).collect(Collectors.toList());
     }
 }
+
 
 

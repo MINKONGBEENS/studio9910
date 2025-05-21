@@ -1,10 +1,11 @@
-package org.example.domain.service;
+package org.example.domain.diary.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.*;
 import org.example.domain.diary.entity.*;
 import org.example.domain.diary.repository.*;
 import org.example.domain.diary.dto.PanelSetDTO;
+import org.example.domain.gallery.dto.WeeklyFolderDTO;
 import org.example.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -26,6 +27,7 @@ public class WebtoonFlowService {
     private final SeedPreferenceRepository prefRepo;
     private final UserRepository userRepo;
     private final RestTemplate restTemplate;
+    private final WeeklyWebtoonRepository weeklyRepo;
 
     @Value("${webtoon.service.url}")
     private String webtoonServiceUrl;
@@ -91,30 +93,54 @@ public class WebtoonFlowService {
         });
     }
 
-    @Transactional(readOnly=true)
-    public WeeklyWebtoonResponseDTO generateWeekly(String userId, int year, int month, int week) {
+    @Transactional
+    public WeeklyFolderDTO generateWeekly(String userId, int year, int month, int week) {
         LocalDate firstOfMonth = LocalDate.of(year, month, 1);
-        LocalDate start = firstOfMonth.plusWeeks(week-1);
+        LocalDate start = firstOfMonth.plusWeeks(week - 1);
         LocalDate end = start.plusWeeks(1);
         LocalDateTime fromLdt = start.atStartOfDay();
         LocalDateTime toLdt = end.atStartOfDay();
-        // gather diaries
-        List<Diary> list = diaryRepo.findAllByUserFirebaseUidAndCreatedAtBetween(userId, fromLdt, toLdt);
-        // 프롬프트 수집
-        List<String> prompts = list.stream()
-                .flatMap(d->Arrays.stream(d.getContent().split("[.?!]\s*")))
+
+        List<Diary> weekDiaries = diaryRepo.findAllByUserFirebaseUidAndCreatedAtBetween(userId, fromLdt, toLdt);
+        if (weekDiaries.isEmpty()) {
+            throw new IllegalArgumentException("선택 주차에 일기가 없습니다.");
+        }
+
+        List<String> prompts = weekDiaries.stream()
+                .flatMap(d -> Arrays.stream(d.getContent().split("[.?!]\\s*")))
+                .filter(s -> !s.isBlank())
                 .collect(Collectors.toList());
         Collections.shuffle(prompts);
-        List<String> sel = prompts.stream().limit(4).collect(Collectors.toList());
-        // 세션 및 패널 생성
-        CreateWebtoonSessionDTO cs = createSession(userId, list.get(0).getId(), 4);
-        // 첫 번째 세트를 자동으로 선택하고 병합
-        Map<String,Object> body = Map.of("diary_id", cs.getSessionId().toString());
-        String merged = restTemplate.postForObject(
-                webtoonServiceUrl + "/merge_panels", body, Map.class).get("merged_image_url").toString();
-        WeeklyWebtoonResponseDTO out = new WeeklyWebtoonResponseDTO();
-        out.setSessionId(cs.getSessionId()); out.setMergedImageUrl(merged);
-        return out;
+
+        CreateWebtoonSessionDTO cs = createSession(userId, weekDiaries.get(0).getId(), 4);
+
+        Map<String,Object> mergeReq = Map.of(
+                "diary_id", cs.getSessionId().toString(),
+                "width", 1024
+        );
+        String mergedUrl = restTemplate.postForObject(
+                        webtoonServiceUrl + "/merge_panels", mergeReq, Map.class)
+                .get("merged_image_url").toString();
+
+        WeeklyWebtoon record = new WeeklyWebtoon();
+        record.setUserId(userId);
+        record.setSessionId(cs.getSessionId());
+        record.setYear(year);
+        record.setMonth(month);
+        record.setWeek(week);
+        record.setMergedImageUrl(mergedUrl);
+        record.setCreatedAt(LocalDateTime.now());
+        weeklyRepo.save(record);
+
+        WeeklyFolderDTO dto = new WeeklyFolderDTO();
+        dto.setYear(year);
+        dto.setMonth(month);
+        dto.setWeek(week);
+        dto.setMergedImageUrl(mergedUrl);
+        dto.setSessionId(cs.getSessionId());
+        dto.setCreatedAt(record.getCreatedAt());
+        return dto;
     }
 }
+
 
