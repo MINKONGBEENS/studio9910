@@ -1,18 +1,22 @@
 package org.example.domain.diary.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.*;
 import org.example.domain.diary.entity.*;
 import org.example.domain.diary.repository.*;
 import org.example.domain.diary.dto.PanelSetDTO;
 import org.example.domain.gallery.dto.WeeklyFolderDTO;
+import org.example.domain.user.entity.User;
 import org.example.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,52 +31,83 @@ public class WebtoonFlowService {
     private final UserRepository userRepo;
     private final RestTemplate restTemplate;
     private final WeeklyWebtoonRepository weeklyRepo;
+    private final ObjectMapper objectMapper;
+
+    private final PromptExtractionService promptService;
 
     @Value("${webtoon.service.url}")
     private String webtoonServiceUrl;
 
     @Transactional
     public CreateWebtoonSessionDTO createSession(String userId, Long diaryId, int panelsCount) {
-        // 1) 일기 내용에서 나온 더미 프롬프트
-        List<String> prompts = Arrays.asList("p1","p2","p3","p4","p5");
-        Collections.shuffle(prompts);
-        List<String> selected = prompts.stream().limit(panelsCount).collect(Collectors.toList());
+        // 1) Load diary and user info
+        Diary diary = diaryRepo.findById(diaryId)
+                .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+        User user = diary.getUser();
 
-        // 2) 세션 유지
+        // 2) Compute gender & age from DB
+        String gender = user.getGender();             // e.g. "M" or "F"
+        LocalDate birthDate = user.getBirthDate();           // e.g. 1998-07-15
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+        // 3) Extract the remaining structured fields from diary content
+        List<StructuredPrompt> prompts = promptService
+                .extractStructuredPrompts(diary.getContent(), panelsCount);
+
+        // 4) Enrich each prompt's char_info with gender & age
+        prompts.forEach(sp -> {
+            sp.getCharInfo().put("gender", gender);
+            sp.getCharInfo().put("age", String.valueOf(age));
+        });
+
+        // 5) Persist session
         GenerationSession session = new GenerationSession();
         session.setId(UUID.randomUUID());
         session.setUser(userRepo.getReferenceById(userId));
-        session.setDiary(diaryRepo.getReferenceById(diaryId));
+        session.setDiary(diary);
         session.setCreatedAt(LocalDateTime.now());
         sessionRepo.save(session);
 
-        // 3) 마이크로서비스 호출
-        HttpHeaders headers = new HttpHeaders(); headers.setContentType(MediaType.APPLICATION_JSON);
+        // 6) Call FastAPI to generate panel sets
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         Map<String,Object> body = new HashMap<>();
         body.put("session_id", session.getId().toString());
-        List<Map<String,Object>> panels = selected.stream().map(c -> Map.of(
-                "char_info", Collections.emptyMap(),
-                "background", Collections.emptyMap(),
-                "caption", c
-        )).collect(Collectors.toList());
+
+        List<Map<String,Object>> panels = prompts.stream().map(sp -> {
+            Map<String,Object> m = new HashMap<>();
+            m.put("char_info", sp.getCharInfo());
+            m.put("background", sp.getBackground());
+            m.put("caption", sp.getCaption());
+            return m;
+        }).collect(Collectors.toList());
+
         body.put("panels", panels);
         HttpEntity<Map<String,Object>> req = new HttpEntity<>(body, headers);
         ResponseEntity<PanelSetDTO[]> resp = restTemplate.postForEntity(
                 webtoonServiceUrl + "/generate_sets", req, PanelSetDTO[].class);
 
-        // 4) candidates 저장
-        for (PanelSetDTO set: resp.getBody()) for (PanelDTO p: set.getPanels()) {
-            PanelCandidate cand = new PanelCandidate();
-            cand.setSession(session); cand.setSetId(set.getSetId());
-            cand.setPanelIndex((short)p.getPanelIndex()); cand.setSeed(p.getSeed());
-            cand.setPromptEn(""); cand.setImagePath(p.getImagePath());
-            cand.setCreatedAt(LocalDateTime.now()); candidateRepo.save(cand);
+        // 7) Save panel candidates
+        for (PanelSetDTO set : resp.getBody()) {
+            for (PanelDTO p : set.getPanels()) {
+                PanelCandidate cand = new PanelCandidate();
+                cand.setSession(session);
+                cand.setSetId(set.getSetId());
+                cand.setPanelIndex((short)p.getPanelIndex());
+                cand.setSeed(p.getSeed());
+                cand.setPromptEn(p.getPromptEn());
+                cand.setImagePath(p.getImagePath());
+                cand.setCreatedAt(LocalDateTime.now());
+                candidateRepo.save(cand);
+            }
         }
 
+        // 8) Build response
         CreateWebtoonSessionDTO out = new CreateWebtoonSessionDTO();
         out.setSessionId(session.getId());
         out.setSets(Arrays.asList(resp.getBody()));
         return out;
+
     }
 
     @Transactional

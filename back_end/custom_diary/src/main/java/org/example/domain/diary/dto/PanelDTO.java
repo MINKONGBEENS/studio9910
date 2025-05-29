@@ -6,5 +6,6 @@ import lombok.Data;
 public class PanelDTO {
     private int panelIndex;
     private long seed;
+    private String promptEn;
     private String imagePath;
 }
