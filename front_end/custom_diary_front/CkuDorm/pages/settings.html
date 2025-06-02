@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>설정 - CKU 기숙사 관리 시스템</title>
+    <link rel="stylesheet" href="../assets/css/settings.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>CKU 기숙사</h2>
+          <p>관리 시스템</p>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            대시보드
+          </a>
+          <a href="student-management.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            학생 관리
+          </a>
+          <a href="sleepover-requests.html" class="nav-link">
+            <i class="fas fa-moon"></i>
+            외박 신청
+          </a>
+          <a href="room-management.html" class="nav-link">
+            <i class="fas fa-door-open"></i>
+            호실 관리
+          </a>
+          <a href="maintenance.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            시설 관리
+          </a>
+          <a href="settings.html" class="nav-link active">
+            <i class="fas fa-cog"></i>
+            설정
+          </a>
+        </nav>
+      </aside>
+
+      <!-- 메인 콘텐츠 -->
+      <main class="content">
+        <header class="content-header">
+          <h1>설정</h1>
+        </header>
+
+        <!-- 설정 섹션 -->
+        <div class="settings-section">
+          <!-- 프로필 설정 -->
+          <div class="settings-card">
+            <h2>프로필 설정</h2>
+            <form id="profileForm" class="settings-form">
+              <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" value="관리자" required />
+              </div>
+              <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" value="admin@cku.ac.kr" required />
+              </div>
+              <div class="form-group">
+                <label for="phone">전화번호</label>
+                <input type="tel" id="phone" value="010-1234-5678" required />
+              </div>
+              <button type="submit" class="btn-primary">저장</button>
+            </form>
+          </div>
+
+          <!-- 비밀번호 변경 -->
+          <div class="settings-card">
+            <h2>비밀번호 변경</h2>
+            <form id="passwordForm" class="settings-form">
+              <div class="form-group">
+                <label for="currentPassword">현재 비밀번호</label>
+                <input type="password" id="currentPassword" required />
+              </div>
+              <div class="form-group">
+                <label for="newPassword">새 비밀번호</label>
+                <input type="password" id="newPassword" required />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">비밀번호 확인</label>
+                <input type="password" id="confirmPassword" required />
+              </div>
+              <button type="submit" class="btn-primary">변경</button>
+            </form>
+          </div>
+
+          <!-- 알림 설정 -->
+          <div class="settings-card">
+            <h2>알림 설정</h2>
+            <form id="notificationForm" class="settings-form">
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="emailNotifications" checked />
+                  이메일 알림
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="smsNotifications" checked />
+                  SMS 알림
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="maintenanceNotifications" checked />
+                  보수 요청 알림
+                </label>
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="sleepoverNotifications" checked />
+                  외박 신청 알림
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">저장</button>
+            </form>
+          </div>
+
+          <!-- 시스템 설정 -->
+          <div class="settings-card">
+            <h2>시스템 설정</h2>
+            <form id="systemForm" class="settings-form">
+              <div class="form-group">
+                <label for="language">언어</label>
+                <select id="language">
+                  <option value="ko">한국어</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="timezone">시간대</label>
+                <select id="timezone">
+                  <option value="Asia/Seoul">서울 (UTC+9)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="dateFormat">날짜 형식</label>
+                <select id="dateFormat">
+                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary">저장</button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script src="../assets/js/settings.js"></script>
+  </body>
+</html> 

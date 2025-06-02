@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>외박 신청 관리 - CKU 기숙사 관리 시스템</title>
+    <link rel="stylesheet" href="../assets/css/sleepover-requests.css" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>CKU 기숙사</h2>
+          <p>관리 시스템</p>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            대시보드
+          </a>
+          <a href="student-management.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            학생 관리
+          </a>
+          <a href="sleepover-requests.html" class="nav-link active">
+            <i class="fas fa-moon"></i>
+            외박 신청
+          </a>
+          <a href="room-management.html" class="nav-link">
+            <i class="fas fa-door-open"></i>
+            호실 관리
+          </a>
+          <a href="maintenance.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            시설 관리
+          </a>
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            설정
+          </a>
+        </nav>
+      </aside>
+
+      <!-- 메인 콘텐츠 -->
+      <main class="content">
+        <header class="content-header">
+          <h1>외박 신청 관리</h1>
+          <div class="header-actions">
+            <button id="addRequestBtn" class="btn-primary">
+              <i class="fas fa-plus"></i>
+              신규 신청
+            </button>
+          </div>
+        </header>
+
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon pending">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+              <h3>대기중</h3>
+              <p class="stat-value">24</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon approved">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+              <h3>승인</h3>
+              <p class="stat-value">87</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon rejected">
+              <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-info">
+              <h3>거절</h3>
+              <p class="stat-value">21</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon total">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-info">
+              <h3>전체</h3>
+              <p class="stat-value">132</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 차트 섹션 -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>외박 신청 추세</h3>
+            <div id="requestsTrendChart" class="chart"></div>
+          </div>
+          <div class="chart-card">
+            <h3>상태 분포</h3>
+            <div id="statusDistributionChart" class="chart"></div>
+          </div>
+        </div>
+
+        <!-- 신청 목록 -->
+        <div class="requests-section">
+          <div class="section-header">
+            <h2>신청 목록</h2>
+            <div class="section-actions">
+              <div class="search-box">
+                <input type="text" placeholder="검색..." />
+                <i class="fas fa-search"></i>
+              </div>
+              <div class="filter-dropdown">
+                <select>
+                  <option value="all">전체 상태</option>
+                  <option value="pending">대기중</option>
+                  <option value="approved">승인</option>
+                  <option value="rejected">거절</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="requests-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      id="selectAllCheckbox"
+                      class="custom-checkbox"
+                    />
+                  </th>
+                  <th>학번</th>
+                  <th>이름</th>
+                  <th>호실</th>
+                  <th>시작일</th>
+                  <th>종료일</th>
+                  <th>사유</th>
+                  <th>상태</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <input type="checkbox" class="request-checkbox custom-checkbox" />
+                  </td>
+                  <td>2024001</td>
+                  <td>홍길동</td>
+                  <td>101</td>
+                  <td>2024-03-15</td>
+                  <td>2024-03-16</td>
+                  <td>가족 모임</td>
+                  <td><span class="status-badge pending">대기중</span></td>
+                  <td class="actions">
+                    <button class="btn-icon" title="상세보기">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon" title="승인">
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn-icon" title="거절">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </td>
+                </tr>
+                <!-- 추가 행들... -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 페이지네이션 -->
+          <div class="pagination">
+            <button class="btn-page">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="btn-page active">1</button>
+            <button class="btn-page">2</button>
+            <button class="btn-page">3</button>
+            <button class="btn-page">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 신규 신청 모달 -->
+    <div id="addRequestModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>신규 외박 신청</h2>
+          <button id="closeAddRequestModal" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addRequestForm">
+            <div class="form-group">
+              <label for="studentId">학번</label>
+              <input type="text" id="studentId" required />
+            </div>
+            <div class="form-group">
+              <label for="startDate">시작일</label>
+              <input type="date" id="startDate" required />
+            </div>
+            <div class="form-group">
+              <label for="endDate">종료일</label>
+              <input type="date" id="endDate" required />
+            </div>
+            <div class="form-group">
+              <label for="reason">사유</label>
+              <textarea id="reason" rows="3" required></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelAddRequest" class="btn-secondary">취소</button>
+          <button type="submit" form="addRequestForm" class="btn-primary">
+            신청하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div id="viewRequestModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>외박 신청 상세</h2>
+          <button id="closeViewRequestModal" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="request-details">
+            <div class="detail-group">
+              <label>학번</label>
+              <p>2024001</p>
+            </div>
+            <div class="detail-group">
+              <label>이름</label>
+              <p>홍길동</p>
+            </div>
+            <div class="detail-group">
+              <label>호실</label>
+              <p>101</p>
+            </div>
+            <div class="detail-group">
+              <label>시작일</label>
+              <p>2024-03-15</p>
+            </div>
+            <div class="detail-group">
+              <label>종료일</label>
+              <p>2024-03-16</p>
+            </div>
+            <div class="detail-group">
+              <label>사유</label>
+              <p>가족 모임</p>
+            </div>
+            <div class="detail-group">
+              <label>상태</label>
+              <p><span class="status-badge pending">대기중</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="closeViewDetails" class="btn-secondary">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 승인 확인 모달 -->
+    <div id="confirmationModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>승인 확인</h2>
+          <button id="closeConfirmationModal" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>선택한 외박 신청을 승인하시겠습니까?</p>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelConfirmation" class="btn-secondary">취소</button>
+          <button class="btn-primary">승인</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script src="../assets/js/sleepover-requests.js"></script>
+  </body>
+</html> 

@@ -1,0 +1,61 @@
+/* Common styles for buttons, inputs, and other reusable components */
+
+/* Button styles */
+.tab-button {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  background-color: #006272;
+  color: white;
+}
+
+/* Input styles */
+input[type="text"],
+input[type="number"] {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: #006272;
+  box-shadow: 0 0 0 2px rgba(0, 98, 114, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.approved {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.urgent {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Card styles */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+} 
