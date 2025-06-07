@@ -6,6 +6,6 @@ import java.util.Map;
 @Data
 public class StructuredPrompt {
     private Map<String, String> charInfo;
-    private Map<String, String> background;
+    private Map<String, Object> background;
     private String caption;
 }

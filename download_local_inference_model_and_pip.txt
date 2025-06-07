@@ -1,0 +1,17 @@
+
+packages = [
+    "# Pip dependencies",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "transformers",
+    "torch",
+    "requests"
+]
+
+models = [
+    "",
+    "# Models",
+    "facebook/nllb-200-1.3B",
+    "mistrallite:latest"
+]

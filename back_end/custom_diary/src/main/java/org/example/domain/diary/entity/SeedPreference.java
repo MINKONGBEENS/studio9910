@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "seed_preferences")
+@IdClass(SeedPreferenceKey.class)
 @Getter
 @Setter
 @Data

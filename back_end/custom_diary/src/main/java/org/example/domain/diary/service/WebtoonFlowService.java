@@ -1,5 +1,7 @@
 package org.example.domain.diary.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.diary.dto.*;
@@ -7,16 +9,16 @@ import org.example.domain.diary.entity.*;
 import org.example.domain.diary.repository.*;
 import org.example.domain.diary.dto.PanelSetDTO;
 import org.example.domain.gallery.dto.WeeklyFolderDTO;
+import org.example.domain.user.entity.ArtStyle;
 import org.example.domain.user.entity.User;
+import org.example.domain.user.repository.ArtStyleRepository;
 import org.example.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,35 +34,86 @@ public class WebtoonFlowService {
     private final RestTemplate restTemplate;
     private final WeeklyWebtoonRepository weeklyRepo;
     private final ObjectMapper objectMapper;
+    private final ArtStyleRepository artStyleRepo;
 
-    private final PromptExtractionService promptService;
-
+    @Value("${fastapi.prompt.url:http://localhost:8000/generate}")
+    private String promptApiUrl;
     @Value("${webtoon.service.url}")
     private String webtoonServiceUrl;
 
     @Transactional
     public CreateWebtoonSessionDTO createSession(String userId, Long diaryId, int panelsCount) {
-        // 1) Load diary and user info
+        // 1) 일기 & 사용자 로드
         Diary diary = diaryRepo.findById(diaryId)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
         User user = diary.getUser();
 
-        // 2) Compute gender & age from DB
-        String gender = user.getGender();             // e.g. "M" or "F"
-        LocalDate birthDate = user.getBirthDate();           // e.g. 1998-07-15
-        int age = Period.between(birthDate, LocalDate.now()).getYears();
+        // 2) DB에서 gender, age 계산
+        final String gender = user.getGender();
+        LocalDate birthDate = user.getBirthDate();
+        final String ageStr = String.valueOf(
+                Period.between(birthDate, LocalDate.now()).getYears()
+        );
 
-        // 3) Extract the remaining structured fields from diary content
-        List<StructuredPrompt> prompts = promptService
-                .extractStructuredPrompts(diary.getContent(), panelsCount);
+        // 3) FastAPI로부터 PromptRequestDTO 리스트 추출
+        List<PromptRequestDTO> prompts = extractPromptsViaFastApi(diary.getContent(), panelsCount);
 
-        // 4) Enrich each prompt's char_info with gender & age
-        prompts.forEach(sp -> {
-            sp.getCharInfo().put("gender", gender);
-            sp.getCharInfo().put("age", String.valueOf(age));
-        });
+        // 4) 최신 ArtStyle JSON → Map 변환
+        ArtStyle artStyle = artStyleRepo.findTopByUserOrderByCreatedAtDesc(user);
+        final Map<String,String> styleMap;
+        if (artStyle != null) {
+            try {
+                styleMap = objectMapper.readValue(
+                        artStyle.getPrompt(),
+                        new TypeReference<Map<String,String>>() {}
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("ArtStyle JSON 파싱 실패", e);
+            }
+        } else {
+            styleMap = Collections.emptyMap();
+        }
 
-        // 5) Persist session
+
+        // 5) PromptRequestDTO → StructuredPrompt 변환
+        List<StructuredPrompt> structured = prompts.stream().map(dto -> {
+            StructuredPrompt sp = new StructuredPrompt();
+            // charInfo 리스트 → Map
+            List<String> ciList = dto.getCharInfo();
+            Map<String,String> ciMap = new LinkedHashMap<>();
+            ciMap.put("gender",     gender);
+            ciMap.put("importance", ciList.size()>1
+                    ? ciList.get(1)
+                    : styleMap.getOrDefault("importance",""));
+            ciMap.put("age",        ageStr);
+            ciMap.put("kind",       ciList.size()>3
+                    ? ciList.get(3)
+                    : styleMap.getOrDefault("kind",""));
+            ciMap.put("shape",      ciList.size()>4
+                    ? ciList.get(4)
+                    : styleMap.getOrDefault("shape",""));
+            ciMap.put("movement",   ciList.size()>5
+                    ? ciList.get(5)
+                    : styleMap.getOrDefault("movement",""));
+            ciMap.put("clothing",   ciList.size()>6
+                    ? ciList.get(6)
+                    : styleMap.getOrDefault("clothing",""));
+
+            sp.setCharInfo(ciMap);
+            sp.setBackground(dto.getBackground());
+            sp.setCaption(dto.getCaption());
+            return sp;
+        }).collect(Collectors.toList());
+
+        // 6) 선호 seed vs 랜덤 seed
+        String preferredSeed = determinePreferredSeed(userId);
+        String randomSeed    = selectRandomSeed();
+
+        // 7) seed 태깅
+        List<StructuredPrompt> preferredSet = applySeed(structured, preferredSeed);
+        List<StructuredPrompt> randomSet    = applySeed(structured, randomSeed);
+
+        // 8) GenerationSession 저장
         GenerationSession session = new GenerationSession();
         session.setId(UUID.randomUUID());
         session.setUser(userRepo.getReferenceById(userId));
@@ -68,32 +121,103 @@ public class WebtoonFlowService {
         session.setCreatedAt(LocalDateTime.now());
         sessionRepo.save(session);
 
-        // 6) Call FastAPI to generate panel sets
+        // 9) 외부 웹툰 생성 API 호출
+        PanelSetDTO[] preferredPanels = generatePanels(session.getId(), preferredSet);
+        PanelSetDTO[] randomPanels    = generatePanels(session.getId(), randomSet);
+
+        // 10) PanelCandidate 저장
+        saveCandidates(session, preferredPanels);
+        saveCandidates(session, randomPanels);
+
+        // 11) 결과 DTO 반환
+        CreateWebtoonSessionDTO out = new CreateWebtoonSessionDTO();
+        out.setSessionId(session.getId());
+        out.setSets(Arrays.asList(preferredPanels));
+        return out;
+    }
+
+    /**
+     * FastAPI에 일기 텍스트 + panelsCount 전송 → PromptRequestDTO 리스트로 리턴
+     */
+    private List<PromptRequestDTO> extractPromptsViaFastApi(String diaryText, int panelsCount) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+
         Map<String,Object> body = new HashMap<>();
-        body.put("session_id", session.getId().toString());
+        body.put("inputs",      diaryText);
+        body.put("panelsCount", panelsCount);
 
-        List<Map<String,Object>> panels = prompts.stream().map(sp -> {
-            Map<String,Object> m = new HashMap<>();
-            m.put("char_info", sp.getCharInfo());
-            m.put("background", sp.getBackground());
-            m.put("caption", sp.getCaption());
-            return m;
-        }).collect(Collectors.toList());
-
-        body.put("panels", panels);
         HttpEntity<Map<String,Object>> req = new HttpEntity<>(body, headers);
-        ResponseEntity<PanelSetDTO[]> resp = restTemplate.postForEntity(
-                webtoonServiceUrl + "/generate_sets", req, PanelSetDTO[].class);
+        String resp = restTemplate.postForObject(promptApiUrl, req, String.class);
 
-        // 7) Save panel candidates
-        for (PanelSetDTO set : resp.getBody()) {
+        try {
+            Map<String,Object> map = objectMapper.readValue(
+                    resp, new TypeReference<Map<String,Object>>() {}
+            );
+            Object gen = map.get("generated_text");
+            return objectMapper.convertValue(
+                    gen,
+                    new TypeReference<List<PromptRequestDTO>>() {}
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("FastAPI 호출/파싱 오류: " + e.getMessage(), e);
+        }
+    }
+
+    /** 유저가 가장 많이 선택한 seed 반환, 없으면 신규 UUID */
+    private String determinePreferredSeed(String userId) {
+        return prefRepo.findByUserId(userId).stream()
+                .max(Comparator.comparingInt(SeedPreference::getChosenCnt))
+                .map(pref -> String.valueOf(pref.getSeed()))  // Optional<String>
+                .orElse(UUID.randomUUID().toString());
+    }
+
+    /** 전체 seed 중 무작위 선택, 없으면 신규 UUID */
+    private String selectRandomSeed() {
+        List<SeedPreference> all = prefRepo.findAll();
+        if (all.isEmpty()) {
+            return UUID.randomUUID().toString();
+        }
+        long raw = all.get(new Random().nextInt(all.size())).getSeed();
+        return String.valueOf(raw);
+    }
+
+    /** 각 StructuredPrompt.caption 앞에 “[seed] ” 태그를 붙입니다 */
+    private List<StructuredPrompt> applySeed(
+            List<StructuredPrompt> prompts,
+            String seed
+    ) {
+        return prompts.stream().map(sp -> {
+            sp.setCaption("[" + seed + "] " + sp.getCaption());
+            return sp;
+        }).collect(Collectors.toList());
+    }
+
+    /** 외부 웹툰 생성 서버에 SessionID + panels 전송 → PanelSetDTO[] 리턴 */
+    private PanelSetDTO[] generatePanels(UUID sessionId, List<StructuredPrompt> panels) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String,Object> body = new HashMap<>();
+        body.put("session_id", sessionId.toString());
+        body.put("panels",      panels);
+
+        ResponseEntity<PanelSetDTO[]> resp = restTemplate.postForEntity(
+                webtoonServiceUrl + "/generate_sets",
+                new HttpEntity<>(body, headers),
+                PanelSetDTO[].class
+        );
+        return resp.getBody();
+    }
+
+    /** 생성된 PanelSetDTO를 PanelCandidate 엔티티로 저장 */
+    private void saveCandidates(GenerationSession session, PanelSetDTO[] sets) {
+        for (PanelSetDTO set : sets) {
             for (PanelDTO p : set.getPanels()) {
                 PanelCandidate cand = new PanelCandidate();
                 cand.setSession(session);
                 cand.setSetId(set.getSetId());
-                cand.setPanelIndex((short)p.getPanelIndex());
+                cand.setPanelIndex((short) p.getPanelIndex());
                 cand.setSeed(p.getSeed());
                 cand.setPromptEn(p.getPromptEn());
                 cand.setImagePath(p.getImagePath());
@@ -101,13 +225,6 @@ public class WebtoonFlowService {
                 candidateRepo.save(cand);
             }
         }
-
-        // 8) Build response
-        CreateWebtoonSessionDTO out = new CreateWebtoonSessionDTO();
-        out.setSessionId(session.getId());
-        out.setSets(Arrays.asList(resp.getBody()));
-        return out;
-
     }
 
     @Transactional

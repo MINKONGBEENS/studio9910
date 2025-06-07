@@ -1,0 +1,16 @@
+# Hugging Face Transform Cache
+**/cache/
+**/.cache/
+# PyTorch 체크포인트(혹시 local에 저장했다면)
+**/*.pt
+**/*.bin
+**/*.safetensors
+# Python 바이트코드
+**/__pycache__/
+**/*.py[cod]
+
+# 가상환경 폴더 무시
+.venv/
+
+# 파이썬 캐시 폴더 무시
+__pycache__/
