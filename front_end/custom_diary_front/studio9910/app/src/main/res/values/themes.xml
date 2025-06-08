@@ -3,16 +3,19 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Studio9910" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="Theme.Studio9910" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="fontFamily">@font/pretendardvariable</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowSplashScreenBackground">@android:color/transparent</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
-        <item name="android:windowSplashScreenAnimationDuration">0</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="Theme.Studio9910.Splash" parent="Theme.Studio9910">
