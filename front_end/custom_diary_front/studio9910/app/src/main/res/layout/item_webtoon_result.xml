@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- 상단바 여백 (status bar) -->
+    <View
+        android:id="@+id/statusBarSpace"
+        android:layout_width="match_parent"
+        android:layout_height="36dp" />
+
+    <!-- 뒤로가기 버튼 -->
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="48dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_arrow_back"
+        android:tint="#111111"
+        android:contentDescription="뒤로가기"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@id/statusBarSpace"/>
+
+    <!-- 타이틀 -->
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="다이어리 4컷"
+        android:textColor="#111111"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@id/backButton"
+        android:layout_marginTop="16dp"/>
+
+    <!-- ViewPager2로 카드 이미지 영역 대체 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/webtoonViewPager"
+        android:layout_width="310dp"
+        android:layout_height="420dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/titleText"
+        android:layout_marginTop="32dp"/>
+
+    <!-- 인디케이터 (3개 점) -->
+    <LinearLayout
+        android:id="@+id/indicatorContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/webtoonViewPager"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp">
+        <!-- 동적으로 인디케이터 dot 추가 -->
+    </LinearLayout>
+
+    <!-- 다운로드 버튼 -->
+    <ImageButton
+        android:id="@+id/downloadButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_download"
+        android:tint="#111111"
+        android:contentDescription="다운로드"
+        android:layout_alignTop="@id/indicatorContainer"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="-16dp"/>
+
+    <!-- 하단 고정 버튼 (CardView로 라운드+그림자) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/selectButtonCard"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="#FF6F61">
+
+        <Button
+            android:id="@+id/selectButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="이걸로 할래요!"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@android:color/transparent"/>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

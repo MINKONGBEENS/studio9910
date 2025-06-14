@@ -10,10 +10,10 @@
         android:title="캘린더" />
     <item
         android:id="@+id/navigation_card"
-        android:icon="@drawable/ic_card"
-        android:title="카드" />
+        android:icon="@drawable/ic_storage"
+        android:title="저장소" />
     <item
         android:id="@+id/navigation_more"
-        android:icon="@drawable/ic_more"
-        android:title="더보기" />
+        android:icon="@drawable/ic_settings"
+        android:title="설정" />
 </menu> 

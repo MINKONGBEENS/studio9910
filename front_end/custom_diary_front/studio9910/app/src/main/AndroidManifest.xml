@@ -59,6 +59,25 @@
             android:name=".SignupNameActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".TodaysFeelingWriteActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".TodaysFeelingCompleteActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WebtoonResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StorageActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

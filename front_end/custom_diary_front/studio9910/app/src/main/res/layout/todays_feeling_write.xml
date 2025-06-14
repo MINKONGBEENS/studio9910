@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/diary_title"
-        app:tint="#000000"/>
+        android:tint="#000000"/>
 
     <TextView
         android:id="@+id/diary_title"
@@ -46,7 +46,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/diary_title"
-        app:tint="#000000"/>
+        android:tint="#000000"/>
 
     <EditText
         android:id="@+id/diary_name"

@@ -2,12 +2,15 @@ package com.soze.studio9910
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.soze.studio9910.databinding.LoginBinding
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: LoginBinding
+    private var isAutoLoginChecked = false
 
     // 테스트용 계정 정보
     companion object {
@@ -48,8 +51,52 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, SignupTermsActivity::class.java))
         }
 
+        // 자동로그인 체크박스 설정
+        setupAutoLoginCheckbox()
+
         // 테스트 계정 정보 로그 출력
         printTestAccounts()
+    }
+
+    private fun setupAutoLoginCheckbox() {
+        val autoLoginCheckIcon = findViewById<ImageView>(R.id.autoLoginCheckIcon)
+        val autoLoginLayout = findViewById<LinearLayout>(R.id.optionLayout)
+        
+        // SharedPreferences에서 자동로그인 설정 불러오기
+        val sharedPreferences = getSharedPreferences("auth", MODE_PRIVATE)
+        isAutoLoginChecked = sharedPreferences.getBoolean("auto_login", false)
+        
+        // 초기 상태 설정
+        updateAutoLoginIcon(autoLoginCheckIcon)
+        
+        // 자동로그인 영역 클릭 리스너 (아이콘과 텍스트 모두 클릭 가능)
+        val autoLoginClickListener = {
+            isAutoLoginChecked = !isAutoLoginChecked
+            updateAutoLoginIcon(autoLoginCheckIcon)
+            
+            // SharedPreferences에 저장
+            sharedPreferences.edit().putBoolean("auto_login", isAutoLoginChecked).apply()
+        }
+        
+        // 아이콘 클릭
+        autoLoginCheckIcon.setOnClickListener { autoLoginClickListener() }
+        
+        // 텍스트 클릭 (전체 영역에서 자동로그인 부분만)
+        findViewById<LinearLayout>(R.id.optionLayout).setOnClickListener { view ->
+            // 클릭 위치가 자동로그인 영역인지 확인 (대략적으로 왼쪽 절반)
+            val clickX = view.width / 3
+            autoLoginClickListener()
+        }
+    }
+    
+    private fun updateAutoLoginIcon(iconView: ImageView) {
+        if (isAutoLoginChecked) {
+            iconView.setImageResource(R.drawable.ic_check_circle)
+            iconView.setColorFilter(resources.getColor(android.R.color.holo_orange_light, null))
+        } else {
+            iconView.setImageResource(R.drawable.ic_check_circle_outline)
+            iconView.setColorFilter(resources.getColor(android.R.color.darker_gray, null))
+        }
     }
 
     private fun validateLogin(email: String, password: String): Boolean {
@@ -62,6 +109,10 @@ class LoginActivity : AppCompatActivity() {
         sharedPreferences.edit().apply {
             putString("token", email)
             putString("email", email)
+            // 자동로그인이 체크되지 않은 경우 토큰을 임시로만 저장
+            if (!isAutoLoginChecked) {
+                putBoolean("temp_login", true)
+            }
             apply()
         }
     }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_margin="2dp">
+
+    <!-- 날짜 텍스트 -->
+    <TextView
+        android:id="@+id/tvDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="15"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="normal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 일기 있음 표시 점 -->
+    <View
+        android:id="@+id/diaryIndicator"
+        android:layout_width="6dp"
+        android:layout_height="6dp"
+        android:background="@drawable/circle_diary_indicator"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvDay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp" />
+
+    <!-- 선택된 날짜 배경 -->
+    <View
+        android:id="@+id/selectedBackground"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/circle_selected_day"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/tvDay"
+        app:layout_constraintBottom_toBottomOf="@id/tvDay"
+        app:layout_constraintStart_toStartOf="@id/tvDay"
+        app:layout_constraintEnd_toEndOf="@id/tvDay" />
+
+</androidx.constraintlayout.widget.ConstraintLayout> 
