@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/floatingMenuContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000"
+    android:clickable="true"
+    android:focusable="true"
+    android:visibility="gone">
+
+    <!-- 메뉴 배경 오버레이 -->
+    <View
+        android:id="@+id/menuOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- 플로팅 메뉴 컨테이너 -->
+    <LinearLayout
+        android:id="@+id/menuItems"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="150dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Weekly Mytoon -->
+        <LinearLayout
+            android:id="@+id/menuWeeklyMytoon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_bottom_nav_oval"
+            android:elevation="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_card"
+                android:layout_marginEnd="12dp"
+                android:tint="#FF6F61" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly Mytoon"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/pretendardvariable"
+                android:layout_marginEnd="16dp" />
+
+        </LinearLayout>
+
+        <!-- Daily Mytoon -->
+        <LinearLayout
+            android:id="@+id/menuDailyMytoon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_bottom_nav_oval"
+            android:elevation="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_palette"
+                android:layout_marginEnd="12dp"
+                android:tint="#FF6F61" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily Mytoon"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/pretendardvariable"
+                android:layout_marginEnd="16dp" />
+
+        </LinearLayout>
+
+        <!-- Today's Feeling -->
+        <LinearLayout
+            android:id="@+id/menuTodaysFeeling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="@drawable/bg_bottom_nav_oval"
+            android:elevation="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_home"
+                android:layout_marginEnd="12dp"
+                android:tint="#FF6F61" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Today's Feeling"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/pretendardvariable"
+                android:layout_marginEnd="16dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout> 

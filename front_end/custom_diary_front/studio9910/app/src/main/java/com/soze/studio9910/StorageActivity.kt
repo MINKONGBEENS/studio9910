@@ -7,15 +7,23 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.card.MaterialCardView
+import com.soze.studio9910.utils.FloatingMenuHelper
 
 class StorageActivity : AppCompatActivity() {
+    private lateinit var floatingMenuHelper: FloatingMenuHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_storage)
 
+        setupFloatingMenu()
         setupBottomNavigation()
         setupClickListeners()
+    }
+
+    private fun setupFloatingMenu() {
+        floatingMenuHelper = FloatingMenuHelper(this, findViewById(android.R.id.content))
+        floatingMenuHelper.setupFloatingMenu()
     }
 
     // 오늘 다이어리 작성 여부 확인
@@ -43,15 +51,11 @@ class StorageActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_add -> {
-                    // + 버튼 클릭 시 일기 작성 페이지로
-                    if (hasTodayDiary()) {
-                        // 이미 작성한 경우 - 완료 페이지로
-                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
-                        startActivity(intent)
+                    // + 버튼 클릭 시 플로팅 메뉴 표시/숨김
+                    if (floatingMenuHelper.isMenuVisible()) {
+                        floatingMenuHelper.hideMenu()
                     } else {
-                        // 작성하지 않은 경우 - 작성 페이지로
-                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
-                        startActivity(intent)
+                        floatingMenuHelper.showMenu()
                     }
                     true
                 }

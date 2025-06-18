@@ -8,11 +8,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.soze.studio9910.databinding.ActivityMainBinding
 import com.google.android.material.card.MaterialCardView
+import com.soze.studio9910.utils.FloatingMenuHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var floatingMenuHelper: FloatingMenuHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         // 로그인된 경우 메인 화면 표시
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupFloatingMenu()
         setupBottomNavigation()
         setupCardClickListeners()
     }
@@ -40,6 +43,11 @@ class MainActivity : AppCompatActivity() {
         
         // 토큰이 있고 자동로그인이 설정되어 있거나, 임시 로그인 상태인 경우
         return !token.isNullOrEmpty() && (autoLogin || tempLogin)
+    }
+
+    private fun setupFloatingMenu() {
+        floatingMenuHelper = FloatingMenuHelper(this, binding.root)
+        floatingMenuHelper.setupFloatingMenu()
     }
 
 
@@ -59,15 +67,11 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_add -> {
-                    // + 버튼은 헤더의 + 버튼과 동일한 동작
-                    if (hasTodayDiary()) {
-                        // 이미 작성한 경우 - 완료 페이지로
-                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
-                        startActivity(intent)
+                    // + 버튼 클릭 시 플로팅 메뉴 표시/숨김
+                    if (floatingMenuHelper.isMenuVisible()) {
+                        floatingMenuHelper.hideMenu()
                     } else {
-                        // 작성하지 않은 경우 - 작성 페이지로
-                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
-                        startActivity(intent)
+                        floatingMenuHelper.showMenu()
                     }
                     true
                 }
@@ -87,16 +91,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupCardClickListeners() {
-        // 새 일기 작성 버튼 (헤더의 + 버튼)
+        // 새 일기 작성 버튼 (헤더의 + 버튼) - 플로팅 메뉴 표시/숨김
         binding.btnAdd.setOnClickListener {
-            if (hasTodayDiary()) {
-                // 이미 작성한 경우 - 완료 페이지로
-                val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
-                startActivity(intent)
+            if (floatingMenuHelper.isMenuVisible()) {
+                floatingMenuHelper.hideMenu()
             } else {
-                // 작성하지 않은 경우 - 작성 페이지로
-                val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
-                startActivity(intent)
+                floatingMenuHelper.showMenu()
             }
         }
 

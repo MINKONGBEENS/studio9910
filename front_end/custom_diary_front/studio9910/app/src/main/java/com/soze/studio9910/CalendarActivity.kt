@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.soze.studio9910.utils.FloatingMenuHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,6 +27,7 @@ class CalendarActivity : AppCompatActivity() {
     private lateinit var calendarAdapter: CalendarAdapter
     private var currentCalendar = Calendar.getInstance()
     private var selectedDate: Calendar? = null
+    private lateinit var floatingMenuHelper: FloatingMenuHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,7 @@ class CalendarActivity : AppCompatActivity() {
         initViews()
         setupCalendar()
         setupClickListeners()
+        setupFloatingMenu()
         setupBottomNavigation()
         updateCalendarDisplay()
         
@@ -197,6 +200,11 @@ class CalendarActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupFloatingMenu() {
+        floatingMenuHelper = FloatingMenuHelper(this, findViewById(android.R.id.content))
+        floatingMenuHelper.setupFloatingMenu()
+    }
+
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNavigation.selectedItemId = R.id.navigation_calendar // 현재 페이지 활성화
@@ -213,15 +221,11 @@ class CalendarActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_add -> {
-                    // + 버튼 클릭 시 일기 작성 페이지로
-                    if (hasTodayDiary()) {
-                        // 이미 작성한 경우 - 완료 페이지로
-                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
-                        startActivity(intent)
+                    // + 버튼 클릭 시 플로팅 메뉴 표시/숨김
+                    if (floatingMenuHelper.isMenuVisible()) {
+                        floatingMenuHelper.hideMenu()
                     } else {
-                        // 작성하지 않은 경우 - 작성 페이지로
-                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
-                        startActivity(intent)
+                        floatingMenuHelper.showMenu()
                     }
                     true
                 }
