@@ -109,9 +109,14 @@ class LoginActivity : AppCompatActivity() {
         sharedPreferences.edit().apply {
             putString("token", email)
             putString("email", email)
-            // 자동로그인이 체크되지 않은 경우 토큰을 임시로만 저장
-            if (!isAutoLoginChecked) {
+            // 자동로그인이 체크된 경우
+            if (isAutoLoginChecked) {
+                putBoolean("auto_login", true)
+                remove("temp_login") // 임시 로그인 플래그 제거
+            } else {
+                // 자동로그인이 체크되지 않은 경우에도 세션 로그인 상태는 유지
                 putBoolean("temp_login", true)
+                putBoolean("auto_login", false)
             }
             apply()
         }

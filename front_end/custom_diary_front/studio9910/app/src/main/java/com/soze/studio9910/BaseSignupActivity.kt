@@ -2,6 +2,7 @@ package com.soze.studio9910
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -89,6 +90,9 @@ abstract class BaseSignupActivity : AppCompatActivity() {
     private fun goToNextStep() {
         val nextClass = getNextActivityClass()
         
+        Log.d("BaseSignupActivity", "goToNextStep called from ${this.javaClass.simpleName}")
+        Log.d("BaseSignupActivity", "Next activity class: ${nextClass?.simpleName}")
+        
         if (nextClass != null) {
             val intent = Intent(this, nextClass).apply {
                 // 각 액티비티별 추가 데이터를 먼저 설정
@@ -100,8 +104,12 @@ abstract class BaseSignupActivity : AppCompatActivity() {
                 if (!hasExtra("selectedGenres")) putStringArrayListExtra("selectedGenres", selectedGenres)
                 if (!hasExtra("selectedArtStyle")) putExtra("selectedArtStyle", selectedArtStyle)
             }
+            
+            Log.d("BaseSignupActivity", "Starting activity: ${nextClass.simpleName}")
             startActivity(intent)
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        } else {
+            Log.e("BaseSignupActivity", "Next activity class is null!")
         }
     }
     

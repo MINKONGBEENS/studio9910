@@ -203,7 +203,7 @@ class CalendarActivity : AppCompatActivity() {
         
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.navigation_home -> {
+                R.id.navigation_feed -> {
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
@@ -212,18 +212,38 @@ class CalendarActivity : AppCompatActivity() {
                     // 이미 캘린더 화면이므로 아무 작업 안함
                     true
                 }
-                R.id.navigation_card -> {
+                R.id.navigation_add -> {
+                    // + 버튼 클릭 시 일기 작성 페이지로
+                    if (hasTodayDiary()) {
+                        // 이미 작성한 경우 - 완료 페이지로
+                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        // 작성하지 않은 경우 - 작성 페이지로
+                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
+                        startActivity(intent)
+                    }
+                    true
+                }
+                R.id.navigation_storage -> {
                     startActivity(Intent(this, StorageActivity::class.java))
                     finish()
                     true
                 }
-                R.id.navigation_more -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
+                R.id.navigation_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     finish()
                     true
                 }
                 else -> false
             }
         }
+    }
+
+    // 오늘 다이어리 작성 여부 확인
+    private fun hasTodayDiary(): Boolean {
+        val today = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+        val prefs = getSharedPreferences("diary", MODE_PRIVATE)
+        return prefs.getBoolean(today, false)
     }
 } 

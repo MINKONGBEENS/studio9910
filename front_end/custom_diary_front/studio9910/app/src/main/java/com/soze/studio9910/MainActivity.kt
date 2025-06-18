@@ -25,9 +25,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 임시 로그인 플래그 제거 (앱이 정상적으로 시작되었으므로)
-        clearTempLoginFlag()
-
         // 로그인된 경우 메인 화면 표시
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -45,18 +42,15 @@ class MainActivity : AppCompatActivity() {
         return !token.isNullOrEmpty() && (autoLogin || tempLogin)
     }
 
-    private fun clearTempLoginFlag() {
-        val sharedPreferences = getSharedPreferences("auth", MODE_PRIVATE)
-        sharedPreferences.edit().remove("temp_login").apply()
-    }
+
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.navigation_home // 현재 페이지 활성화
+        binding.bottomNavigation.selectedItemId = R.id.navigation_feed // 현재 페이지 활성화
         
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.navigation_home -> {
-                    // 이미 홈 화면이므로 아무 작업 안함
+                R.id.navigation_feed -> {
+                    // 이미 피드 화면이므로 아무 작업 안함
                     true
                 }
                 R.id.navigation_calendar -> {
@@ -64,13 +58,26 @@ class MainActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-                R.id.navigation_card -> {
+                R.id.navigation_add -> {
+                    // + 버튼은 헤더의 + 버튼과 동일한 동작
+                    if (hasTodayDiary()) {
+                        // 이미 작성한 경우 - 완료 페이지로
+                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        // 작성하지 않은 경우 - 작성 페이지로
+                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
+                        startActivity(intent)
+                    }
+                    true
+                }
+                R.id.navigation_storage -> {
                     startActivity(Intent(this, StorageActivity::class.java))
                     finish()
                     true
                 }
-                R.id.navigation_more -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
+                R.id.navigation_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     finish()
                     true
                 }
@@ -80,9 +87,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupCardClickListeners() {
-        // Today's Feeling 카드 클릭 리스너
-        val cardTodayFeeling = findViewById<MaterialCardView>(R.id.cardTodayFeeling)
-        cardTodayFeeling.setOnClickListener {
+        // 새 일기 작성 버튼 (헤더의 + 버튼)
+        binding.btnAdd.setOnClickListener {
             if (hasTodayDiary()) {
                 // 이미 작성한 경우 - 완료 페이지로
                 val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
@@ -94,16 +100,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Daily Mytoon 카드 클릭 리스너 (추후 구현)
-        val cardDailyMytoon = findViewById<MaterialCardView>(R.id.cardDailyMytoon)
-        cardDailyMytoon.setOnClickListener {
-            Toast.makeText(this, "구현중입니다", Toast.LENGTH_SHORT).show()
+        // 포스트 좋아요 버튼들 (예시)
+        binding.btnLike1?.setOnClickListener {
+            Toast.makeText(this, "좋아요!", Toast.LENGTH_SHORT).show()
         }
 
-        // Weekly Mytoon 카드 클릭 리스너 (추후 구현)
-        val cardWeeklyMytoon = findViewById<MaterialCardView>(R.id.cardWeeklyMytoon)
-        cardWeeklyMytoon.setOnClickListener {
-            Toast.makeText(this, "구현중입니다", Toast.LENGTH_SHORT).show()
+        binding.btnLike2?.setOnClickListener {
+            Toast.makeText(this, "좋아요!", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnLike3?.setOnClickListener {
+            Toast.makeText(this, "좋아요!", Toast.LENGTH_SHORT).show()
         }
     }
 

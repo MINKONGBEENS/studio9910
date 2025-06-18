@@ -18,7 +18,23 @@ class SettingsActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    // 오늘 다이어리 작성 여부 확인
+    private fun hasTodayDiary(): Boolean {
+        val today = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        val prefs = getSharedPreferences("diary", MODE_PRIVATE)
+        return prefs.getBoolean(today, false)
+    }
+
     private fun setupClickListeners() {
+        // 뒤로가기 버튼
+        val backButton = findViewById<ImageView>(R.id.backButton)
+        backButton.setOnClickListener {
+            // 프로필 페이지로 이동
+            startActivity(Intent(this, ProfileActivity::class.java))
+            finish()
+        }
+        
         // 로그아웃 버튼
         val logoutButton = findViewById<LinearLayout>(R.id.logoutButton)
         logoutButton.setOnClickListener {
@@ -55,11 +71,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        bottomNavigation.selectedItemId = R.id.navigation_more // 현재 페이지 활성화
+        // 설정 페이지는 프로필에서 접근하므로 프로필을 활성화
+        bottomNavigation.selectedItemId = R.id.navigation_profile
         
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.navigation_home -> {
+                R.id.navigation_feed -> {
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                     true
@@ -69,13 +86,27 @@ class SettingsActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-                R.id.navigation_card -> {
+                R.id.navigation_add -> {
+                    // + 버튼 클릭 시 일기 작성 페이지로
+                    if (hasTodayDiary()) {
+                        // 이미 작성한 경우 - 완료 페이지로
+                        val intent = Intent(this, TodaysFeelingCompleteActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        // 작성하지 않은 경우 - 작성 페이지로
+                        val intent = Intent(this, TodaysFeelingWriteActivity::class.java)
+                        startActivity(intent)
+                    }
+                    true
+                }
+                R.id.navigation_storage -> {
                     startActivity(Intent(this, StorageActivity::class.java))
                     finish()
                     true
                 }
-                R.id.navigation_more -> {
-                    // 이미 설정 화면이므로 아무 작업 안함
+                R.id.navigation_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                    finish()
                     true
                 }
                 else -> false

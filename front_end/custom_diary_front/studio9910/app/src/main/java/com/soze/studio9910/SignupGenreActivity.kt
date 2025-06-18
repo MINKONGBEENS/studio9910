@@ -1,5 +1,6 @@
 package com.soze.studio9910
 
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import com.soze.studio9910.utils.UIUtils
@@ -13,7 +14,10 @@ class SignupGenreActivity : BaseSignupActivity() {
 
     override fun getLayoutResId(): Int = R.layout.activity_signup_genre
 
-    override fun getNextActivityClass(): Class<*> = SignupArtStyleActivity::class.java
+    override fun getNextActivityClass(): Class<*> {
+        Log.d("SignupGenreActivity", "getNextActivityClass called - returning SignupArtStyleActivity")
+        return SignupArtStyleActivity::class.java
+    }
 
     override fun isValidForNext(): Boolean = currentSelectedGenres.isNotEmpty()
 
@@ -28,6 +32,7 @@ class SignupGenreActivity : BaseSignupActivity() {
     }
 
     override fun addSpecificExtras(intent: android.content.Intent) {
+        Log.d("SignupGenreActivity", "addSpecificExtras called with genres: $currentSelectedGenres")
         intent.putStringArrayListExtra("selectedGenres", ArrayList(currentSelectedGenres))
     }
     

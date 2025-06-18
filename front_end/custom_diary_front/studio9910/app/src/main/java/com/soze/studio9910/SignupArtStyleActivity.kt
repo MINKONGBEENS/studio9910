@@ -1,13 +1,11 @@
 package com.soze.studio9910
 
 import android.content.Intent
-import android.view.View
+import android.util.Log
 import android.widget.ImageView
-import android.widget.Toast
-import com.soze.studio9910.databinding.ActivitySignupArtStyleBinding
+import androidx.core.content.ContextCompat
 
 class SignupArtStyleActivity : BaseSignupActivity() {
-    private lateinit var binding: ActivitySignupArtStyleBinding
     private var selectedStyle: String? = null
 
     override fun getLayoutResId(): Int = R.layout.activity_signup_art_style
@@ -17,28 +15,36 @@ class SignupArtStyleActivity : BaseSignupActivity() {
     override fun isValidForNext(): Boolean = selectedStyle != null
 
     override fun initSpecificViews() {
-        // View Binding 초기화
-        binding = ActivitySignupArtStyleBinding.bind(findViewById(android.R.id.content))
+        // 모든 아트 스타일 ImageView 찾기 및 초기 상태 설정
+        val artStyles = listOf(
+            R.id.artStyle1, R.id.artStyle2, R.id.artStyle3,
+            R.id.artStyle4, R.id.artStyle5, R.id.artStyle6
+        )
         
-        // 초기 상태 설정
-        binding.artStyle1.isSelected = false
-        binding.artStyle2.isSelected = false
-        binding.artStyle3.isSelected = false
+        artStyles.forEach { styleId ->
+            findViewById<ImageView>(styleId)?.apply {
+                background = ContextCompat.getDrawable(this@SignupArtStyleActivity, R.drawable.art_style_unselected)
+            }
+        }
     }
 
     override fun setupSpecificListeners() {
-        // 각 스타일 카드에 클릭 리스너 설정
-        binding.artStyle1.setOnClickListener {
-            selectedStyle = "style1"
-            updateSelection(binding.artStyle1)
-        }
-        binding.artStyle2.setOnClickListener {
-            selectedStyle = "style2"
-            updateSelection(binding.artStyle2)
-        }
-        binding.artStyle3.setOnClickListener {
-            selectedStyle = "style3"
-            updateSelection(binding.artStyle3)
+        // 모든 아트 스타일 카드에 클릭 리스너 설정
+        val artStyleIds = listOf(
+            R.id.artStyle1 to "style1",
+            R.id.artStyle2 to "style2", 
+            R.id.artStyle3 to "style3",
+            R.id.artStyle4 to "style4",
+            R.id.artStyle5 to "style5",
+            R.id.artStyle6 to "style6"
+        )
+        
+        artStyleIds.forEach { (styleId, styleName) ->
+            findViewById<ImageView>(styleId)?.setOnClickListener { view ->
+                Log.d("SignupArtStyleActivity", "Style clicked: $styleName")
+                selectedStyle = styleName
+                updateSelection(view as ImageView)
+            }
         }
     }
 
@@ -47,13 +53,23 @@ class SignupArtStyleActivity : BaseSignupActivity() {
     }
 
     private fun updateSelection(selectedCard: ImageView) {
-        // 모든 카드 선택 해제
-        binding.artStyle1.isSelected = false
-        binding.artStyle2.isSelected = false
-        binding.artStyle3.isSelected = false
+        Log.d("SignupArtStyleActivity", "updateSelection called")
+        
+        // 모든 카드 선택 해제 (drawable 직접 변경)
+        val allStyleIds = listOf(
+            R.id.artStyle1, R.id.artStyle2, R.id.artStyle3,
+            R.id.artStyle4, R.id.artStyle5, R.id.artStyle6
+        )
+        
+        allStyleIds.forEach { styleId ->
+            findViewById<ImageView>(styleId)?.apply {
+                background = ContextCompat.getDrawable(this@SignupArtStyleActivity, R.drawable.art_style_unselected)
+            }
+        }
         
         // 선택된 카드만 선택 상태로 변경
-        selectedCard.isSelected = true
+        selectedCard.background = ContextCompat.getDrawable(this, R.drawable.art_style_selected)
+        Log.d("SignupArtStyleActivity", "Selection background updated")
         
         // 다음 버튼 활성화
         updateNextButton(isValidForNext())
